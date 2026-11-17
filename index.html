@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>社会消费品零售总额 · 月度修订记录</title>
+<style>
+:root{color-scheme:light;--paper:#f9f6ee;--ink:#202946;--muted:#565d6e;--accent:#34476d;--rule:#ccc8ba;--light:#e9e5da;--serif:"STIX Two Text","Songti SC","Noto Serif CJK SC","SimSun",Georgia,serif;--sans:"Source Sans 3","Microsoft YaHei","PingFang SC",system-ui,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.6 var(--sans);font-variant-numeric:tabular-nums}
+header,main,footer{width:min(100% - 48px,960px);margin:auto}
+header{padding:22px 0 12px;border-bottom:2px solid var(--ink);display:flex;align-items:center;justify-content:space-between;gap:1rem}
+header strong{font-family:var(--serif);font-size:18px;letter-spacing:.12em}
+header span,footer{font-size:12px;color:var(--muted)}
+h1,h2,p{margin:0}h1,h2{font-family:var(--serif)}
+.intro{margin:43px 0 27px}
+h1{font-size:clamp(31px,5.5vw,58px);line-height:1.25;letter-spacing:.015em}
+.intro p{margin-top:10px;color:var(--muted)}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:20px;border-block:1px solid var(--rule);padding:18px 0 20px}
+label{display:block;font-weight:600;font-size:13px;margin-bottom:5px}
+input,select{display:block;color:var(--ink);font:inherit;line-height:1.3;font-variant-numeric:tabular-nums;width:100%;min-width:0;height:43px;border:1px solid #9899a1;border-radius:3px;background:#fffdf8;padding:0 11px}
+:focus-visible{outline:3px solid #657fa8;outline-offset:3px}
+.result{padding:27px 0 25px;display:grid;grid-template-columns:minmax(205px,.75fr) minmax(0,1.25fr);gap:36px;border-bottom:1px solid var(--rule);align-items:center}
+.metric-title,.chart-title{font-size:14px;color:var(--muted);font-weight:600}
+.value{font:normal clamp(51px,7.7vw,81px)/1.22 Georgia,"Times New Roman",serif;letter-spacing:-.055em;white-space:nowrap}
+.value small{margin-left:.15em;font-size:.44em}
+.as-of{margin-top:5px;color:var(--muted);font-size:13px}
+.chart-title{margin:0 0 4px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font:12px var(--sans);fill:var(--muted);font-variant-numeric:tabular-nums}
+.history{padding-top:25px}
+.table-heading{display:flex;align-items:baseline;justify-content:space-between;gap:.6rem;margin-bottom:10px}
+h2{font-size:clamp(22px,3vw,29px)}
+.table-heading p{color:var(--muted);font-size:13px}
+table{border-collapse:collapse;width:100%;text-align:right}
+th,td{padding:9px 8px;border-bottom:1px solid var(--light);white-space:nowrap}
+th{font-size:12px;color:var(--muted);font-weight:600;border-block:1px solid var(--rule)}
+th:first-child,td:first-child{text-align:left;padding-left:0}
+th:last-child,td:last-child{padding-right:0}
+a{color:var(--accent);text-underline-offset:3px}
+.empty{margin:13px 0;color:var(--muted)}
+footer{margin-top:27px;border-top:1px solid var(--rule);padding:13px 0 26px}
+[hidden]{display:none!important}
+@media(max-width:610px){header,main,footer{width:calc(100% - 32px)}header{padding-top:15px}header strong{font-size:16px}header span{font-size:11px}.intro{margin:29px 0 20px}.intro p{font-size:14px}.filters{gap:10px;padding:14px 0}.result{grid-template-columns:1fr;gap:16px;padding:18px 0}.value{font-size:58px}.chart-title{margin-bottom:0}.history{padding-top:17px}th,td{padding:8px 3px;font-size:13px}th{font-size:11px}}
+@media(max-width:375px){.filters{grid-template-columns:1fr}.table-heading{flex-wrap:wrap}header span{display:none}}
+</style>
+</head>
+<body>
+<header><strong>统计数据修订档案</strong><span>国家统计局公开数据</span></header>
+<main>
+<section class="intro"><h1>社会消费品零售总额</h1><p>查看某个月经季节调整后的环比增速，以及后续公告对它的修订。</p></section>
+<div class="filters">
+<div><label for="period">统计月份</label><select id="period"></select></div>
+<div><label for="cutoff">截至日期（北京时间）</label><input id="cutoff" type="date" list="releases" required><datalist id="releases"></datalist></div>
+</div>
+<section class="result" aria-label="截至所选日期的结果">
+<div aria-live="polite"><p class="metric-title" id="metric-title"></p><p class="value" id="value"></p><p class="as-of" id="current-release"></p></div>
+<div id="chart-wrap"><p class="chart-title">按发布日期观察环比（%）</p><svg id="chart" viewBox="0 0 420 136" role="img" aria-label="历次公布值的折线图，详细数值见下表"></svg></div>
+</section>
+<section class="history"><div class="table-heading"><h2>历次发布记录</h2><p id="history-count"></p></div>
+<table id="history-table"><thead><tr><th scope="col">发布日期</th><th scope="col">公布值</th><th scope="col">较上次（百分点）</th><th scope="col">数据来源</th></tr></thead><tbody id="history"></tbody></table>
+<p id="empty" class="empty" hidden></p>
+</section>
+</main>
+<footer><p id="coverage"></p><p>数据引自<a href="https://www.stats.gov.cn/">国家统计局网站（www.stats.gov.cn）</a>。</p></footer>
+<script id="observations" type="application/json">[{"period":"2025-05","release_date":"2026-06-16","value":"0.69","source_url":"https://www.stats.gov.cn/sj/zxfb/202606/t20260616_1963949.html"},{"period":"2025-06","release_date":"2026-06-16","value":"-0.28","source_url":"https://www.stats.gov.cn/sj/zxfb/202606/t20260616_1963949.html"},{"period":"2025-07","release_date":"2026-06-16","value":"0.07","source_url":"https://www.stats.gov.cn/sj/zxfb/202606/t20260616_1963949.html"},{"period":"2025-08","release_date":"2026-06-16","value":"0.19","source_url":"https://www.stats.gov.cn/sj/zxfb/202606/t20260616_1963949.html"},{"period":"2025-09","release_date":"2026-06-16","value":"0.05","source_url":"https://www.stats.gov.cn/sj/zxfb/202606/t20260616_1963949.html"},{"period":"2025-10","release_date":"2026-06-16","value":"0.18","source_url":"https://www.stats.gov.cn/sj/zxfb/202606/t20260616_1963949.html"},{"period":"2025-11","release_date":"2026-06-16","value":"-0.26","source_url":"https://www.stats.gov.cn/sj/zxfb/202606/t20260616_1963949.html"},{"period":"2025-12","release_date":"2026-06-16","value":"-0.12","source_url":"https://www.stats.gov.cn/sj/zxfb/202606/t20260616_1963949.html"},{"period":"2026-01","release_date":"2026-06-16","value":"0.27","source_url":"https://www.stats.gov.cn/sj/zxfb/202606/t20260616_1963949.html"},{"period":"2026-02","release_date":"2026-06-16","value":"0.32","source_url":"https://www.stats.gov.cn/sj/zxfb/202606/t20260616_1963949.html"},{"period":"2026-03","release_date":"2026-06-16","value":"-0.13","source_url":"https://www.stats.gov.cn/sj/zxfb/202606/t20260616_1963949.html"},{"period":"2026-04","release_date":"2026-06-16","value":"-0.55","source_url":"https://www.stats.gov.cn/sj/zxfb/202606/t20260616_1963949.html"},{"period":"2026-05","release_date":"2026-06-16","value":"-0.38","source_url":"https://www.stats.gov.cn/sj/zxfb/202606/t20260616_1963949.html"},{"period":"2025-06","release_date":"2026-07-15","value":"-0.50","source_url":"https://www.stats.gov.cn/sj/zxfb/202607/t20260715_1964127.html"},{"period":"2025-07","release_date":"2026-07-15","value":"0.04","source_url":"https://www.stats.gov.cn/sj/zxfb/202607/t20260715_1964127.html"},{"period":"2025-08","release_date":"2026-07-15","value":"0.26","source_url":"https://www.stats.gov.cn/sj/zxfb/202607/t20260715_1964127.html"},{"period":"2025-09","release_date":"2026-07-15","value":"0.04","source_url":"https://www.stats.gov.cn/sj/zxfb/202607/t20260715_1964127.html"},{"period":"2025-10","release_date":"2026-07-15","value":"0.15","source_url":"https://www.stats.gov.cn/sj/zxfb/202607/t20260715_1964127.html"},{"period":"2025-11","release_date":"2026-07-15","value":"-0.10","source_url":"https://www.stats.gov.cn/sj/zxfb/202607/t20260715_1964127.html"},{"period":"2025-12","release_date":"2026-07-15","value":"-0.02","source_url":"https://www.stats.gov.cn/sj/zxfb/202607/t20260715_1964127.html"},{"period":"2026-01","release_date":"2026-07-15","value":"0.26","source_url":"https://www.stats.gov.cn/sj/zxfb/202607/t20260715_1964127.html"},{"period":"2026-02","release_date":"2026-07-15","value":"0.32","source_url":"https://www.stats.gov.cn/sj/zxfb/202607/t20260715_1964127.html"},{"period":"2026-03","release_date":"2026-07-15","value":"0.09","source_url":"https://www.stats.gov.cn/sj/zxfb/202607/t20260715_1964127.html"},{"period":"2026-04","release_date":"2026-07-15","value":"-0.29","source_url":"https://www.stats.gov.cn/sj/zxfb/202607/t20260715_1964127.html"},{"period":"2026-05","release_date":"2026-07-15","value":"-0.17","source_url":"https://www.stats.gov.cn/sj/zxfb/202607/t20260715_1964127.html"},{"period":"2026-06","release_date":"2026-07-15","value":"0.38","source_url":"https://www.stats.gov.cn/sj/zxfb/202607/t20260715_1964127.html"},{"period":"2025-07","release_date":"2026-08-17","value":"0.01","source_url":"https://www.stats.gov.cn/sj/zxfbhjd/202608/t20260817_1965052.html"},{"period":"2025-08","release_date":"2026-08-17","value":"0.18","source_url":"https://www.stats.gov.cn/sj/zxfbhjd/202608/t20260817_1965052.html"},{"period":"2025-09","release_date":"2026-08-17","value":"-0.08","source_url":"https://www.stats.gov.cn/sj/zxfbhjd/202608/t20260817_1965052.html"},{"period":"2025-10","release_date":"2026-08-17","value":"0.15","source_url":"https://www.stats.gov.cn/sj/zxfbhjd/202608/t20260817_1965052.html"},{"period":"2025-11","release_date":"2026-08-17","value":"-0.10","source_url":"https://www.stats.gov.cn/sj/zxfbhjd/202608/t20260817_1965052.html"},{"period":"2025-12","release_date":"2026-08-17","value":"-0.01","source_url":"https://www.stats.gov.cn/sj/zxfbhjd/202608/t20260817_1965052.html"},{"period":"2026-01","release_date":"2026-08-17","value":"0.18","source_url":"https://www.stats.gov.cn/sj/zxfbhjd/202608/t20260817_1965052.html"},{"period":"2026-02","release_date":"2026-08-17","value":"0.23","source_url":"https://www.stats.gov.cn/sj/zxfbhjd/202608/t20260817_1965052.html"},{"period":"2026-03","release_date":"2026-08-17","value":"0.10","source_url":"https://www.stats.gov.cn/sj/zxfbhjd/202608/t20260817_1965052.html"},{"period":"2026-04","release_date":"2026-08-17","value":"-0.27","source_url":"https://www.stats.gov.cn/sj/zxfbhjd/202608/t20260817_1965052.html"},{"period":"2026-05","release_date":"2026-08-17","value":"-0.15","source_url":"https://www.stats.gov.cn/sj/zxfbhjd/202608/t20260817_1965052.html"},{"period":"2026-06","release_date":"2026-08-17","value":"0.35","source_url":"https://www.stats.gov.cn/sj/zxfbhjd/202608/t20260817_1965052.html"},{"period":"2026-07","release_date":"2026-08-17","value":"0.06","source_url":"https://www.stats.gov.cn/sj/zxfbhjd/202608/t20260817_1965052.html"},{"period":"2025-08","release_date":"2026-09-15","value":"0.22","source_url":"https://www.stats.gov.cn/sj/zxfb/202609/t20260915_1965311.html"},{"period":"2025-09","release_date":"2026-09-15","value":"-0.07","source_url":"https://www.stats.gov.cn/sj/zxfb/202609/t20260915_1965311.html"},{"period":"2025-10","release_date":"2026-09-15","value":"0.14","source_url":"https://www.stats.gov.cn/sj/zxfb/202609/t20260915_1965311.html"},{"period":"2025-11","release_date":"2026-09-15","value":"-0.13","source_url":"https://www.stats.gov.cn/sj/zxfb/202609/t20260915_1965311.html"},{"period":"2025-12","release_date":"2026-09-15","value":"-0.06","source_url":"https://www.stats.gov.cn/sj/zxfb/202609/t20260915_1965311.html"},{"period":"2026-01","release_date":"2026-09-15","value":"0.21","source_url":"https://www.stats.gov.cn/sj/zxfb/202609/t20260915_1965311.html"},{"period":"2026-02","release_date":"2026-09-15","value":"0.27","source_url":"https://www.stats.gov.cn/sj/zxfb/202609/t20260915_1965311.html"},{"period":"2026-03","release_date":"2026-09-15","value":"0.12","source_url":"https://www.stats.gov.cn/sj/zxfb/202609/t20260915_1965311.html"},{"period":"2026-04","release_date":"2026-09-15","value":"-0.23","source_url":"https://www.stats.gov.cn/sj/zxfb/202609/t20260915_1965311.html"},{"period":"2026-05","release_date":"2026-09-15","value":"-0.10","source_url":"https://www.stats.gov.cn/sj/zxfb/202609/t20260915_1965311.html"},{"period":"2026-06","release_date":"2026-09-15","value":"0.40","source_url":"https://www.stats.gov.cn/sj/zxfb/202609/t20260915_1965311.html"},{"period":"2026-07","release_date":"2026-09-15","value":"0.01","source_url":"https://www.stats.gov.cn/sj/zxfb/202609/t20260915_1965311.html"},{"period":"2026-08","release_date":"2026-09-15","value":"-0.13","source_url":"https://www.stats.gov.cn/sj/zxfb/202609/t20260915_1965311.html"},{"period":"2025-09","release_date":"2026-10-19","value":"-0.10","source_url":"https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html"},{"period":"2025-10","release_date":"2026-10-19","value":"0.15","source_url":"https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html"},{"period":"2025-11","release_date":"2026-10-19","value":"-0.10","source_url":"https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html"},{"period":"2025-12","release_date":"2026-10-19","value":"-0.03","source_url":"https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html"},{"period":"2026-01","release_date":"2026-10-19","value":"0.22","source_url":"https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html"},{"period":"2026-02","release_date":"2026-10-19","value":"0.35","source_url":"https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html"},{"period":"2026-03","release_date":"2026-10-19","value":"0.12","source_url":"https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html"},{"period":"2026-04","release_date":"2026-10-19","value":"-0.26","source_url":"https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html"},{"period":"2026-05","release_date":"2026-10-19","value":"-0.09","source_url":"https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html"},{"period":"2026-06","release_date":"2026-10-19","value":"0.40","source_url":"https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html"},{"period":"2026-07","release_date":"2026-10-19","value":"0.11","source_url":"https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html"},{"period":"2026-08","release_date":"2026-10-19","value":"-0.16","source_url":"https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html"},{"period":"2026-09","release_date":"2026-10-19","value":"0.35","source_url":"https://www.stats.gov.cn/sj/zxfb/202610/t20261019_1965614.html"},{"period":"2025-10","release_date":"2026-11-16","value":"0.11","source_url":"https://www.stats.gov.cn/sj/zxfb/202611/t20261116_1965839.html"},{"period":"2025-11","release_date":"2026-11-16","value":"-0.14","source_url":"https://www.stats.gov.cn/sj/zxfb/202611/t20261116_1965839.html"},{"period":"2025-12","release_date":"2026-11-16","value":"-0.08","source_url":"https://www.stats.gov.cn/sj/zxfb/202611/t20261116_1965839.html"},{"period":"2026-01","release_date":"2026-11-16","value":"0.15","source_url":"https://www.stats.gov.cn/sj/zxfb/202611/t20261116_1965839.html"},{"period":"2026-02","release_date":"2026-11-16","value":"0.28","source_url":"https://www.stats.gov.cn/sj/zxfb/202611/t20261116_1965839.html"},{"period":"2026-03","release_date":"2026-11-16","value":"0.11","source_url":"https://www.stats.gov.cn/sj/zxfb/202611/t20261116_1965839.html"},{"period":"2026-04","release_date":"2026-11-16","value":"-0.26","source_url":"https://www.stats.gov.cn/sj/zxfb/202611/t20261116_1965839.html"},{"period":"2026-05","release_date":"2026-11-16","value":"-0.10","source_url":"https://www.stats.gov.cn/sj/zxfb/202611/t20261116_1965839.html"},{"period":"2026-06","release_date":"2026-11-16","value":"0.25","source_url":"https://www.stats.gov.cn/sj/zxfb/202611/t20261116_1965839.html"},{"period":"2026-07","release_date":"2026-11-16","value":"0.07","source_url":"https://www.stats.gov.cn/sj/zxfb/202611/t20261116_1965839.html"},{"period":"2026-08","release_date":"2026-11-16","value":"-0.21","source_url":"https://www.stats.gov.cn/sj/zxfb/202611/t20261116_1965839.html"},{"period":"2026-09","release_date":"2026-11-16","value":"0.34","source_url":"https://www.stats.gov.cn/sj/zxfb/202611/t20261116_1965839.html"},{"period":"2026-10","release_date":"2026-11-16","value":"0.02","source_url":"https://www.stats.gov.cn/sj/zxfb/202611/t20261116_1965839.html"}]</script>
+<script>
+"use strict";
+const data = JSON.parse(document.getElementById("observations").textContent);
+const el = id => document.getElementById(id);
+const months = [...new Set(data.map(row => row.period))].sort().reverse();
+const dates = [...new Set(data.map(row => row.release_date))].sort();
+const formatMonth = period => period.slice(0, 4) + " 年 " + Number(period.slice(5)) + " 月";
+const signed = value => Number(value) > 0 ? "+" + value : value;
+function svgElement(tag, attrs, label) {
+  const elem = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const [key, value] of Object.entries(attrs)) elem.setAttribute(key, value);
+  if (label !== undefined) elem.textContent = label;
+  return elem;
+}
+function drawChart(rows) {
+  const svg = el("chart");
+  svg.replaceChildren();
+  if (!rows.length) return;
+  const left = 47, right = 396, top = 12, bottom = 103;
+  const values = rows.map(row => Number(row.value));
+  const datesMs = rows.map(row => Date.parse(row.release_date + "T00:00:00Z"));
+  const cents = values.map(value => Math.round(value * 100));
+  const margin = Math.max(Math.ceil((Math.max(...cents) - Math.min(...cents)) / 6), 1);
+  const floor = Math.min(...cents) - margin;
+  const halfRange = Math.ceil((Math.max(...cents) + margin - floor) / 2);
+  const low = floor / 100;
+  const high = (floor + 2 * halfRange) / 100;
+  const x = index => rows.length === 1 ? (left + right) / 2 : left + (datesMs[index] - datesMs[0]) / (datesMs[datesMs.length - 1] - datesMs[0]) * (right - left);
+  const y = value => bottom - (value - low) / (high - low) * (bottom - top);
+  for (const value of [high, (low + high) / 2, low]) {
+    svg.append(svgElement("line", {x1:left, x2:right, y1:y(value), y2:y(value), stroke:"#d5d3c8", "stroke-dasharray":"3 4"}));
+    svg.append(svgElement("text", {x:left-8, y:y(value)+4, "text-anchor":"end"}, value.toFixed(2)));
+  }
+  svg.append(svgElement("polyline", {points:values.map((v,i) => x(i) + "," + y(v)).join(" "),fill:"none",stroke:"#34476d","stroke-width":2.2}));
+  rows.forEach((row,i) => {
+    const point = svgElement("circle", {cx:x(i),cy:y(values[i]),r:i === rows.length-1 ? 4.8 : 3.6,fill:i === rows.length-1 ? "#34476d" : "#f9f6ee",stroke:"#34476d","stroke-width":2});
+    point.append(svgElement("title", {}, row.release_date + " · " + signed(row.value) + "%"));
+    svg.append(point);
+    if (i === 0 || i === rows.length-1) {
+      const anchor = rows.length === 1 ? "middle" : i === 0 ? "start" : "end";
+      svg.append(svgElement("text", {x:x(i),y:126,"text-anchor":anchor}, row.release_date));
+    }
+  });
+}
+function render() {
+  const month = el("period").value, cutoff = el("cutoff").value;
+  const rows = data.filter(row => row.period === month && row.release_date <= cutoff);
+  const latest = rows[rows.length - 1];
+  el("metric-title").textContent = formatMonth(month) + " · 季调环比";
+  el("value").textContent = latest ? signed(latest.value) : "—";
+  if (latest) {
+    const unit = document.createElement("small");
+    unit.textContent = "%";
+    el("value").append(unit);
+  }
+  el("current-release").textContent = latest ? "取自 " + latest.release_date + " 公告" : (cutoff ? "截至所选日期，档案中没有记录。" : "请选择截至日期。");
+  if (rows.length > 1) {
+    const delta = Math.round((Number(latest.value) - Number(rows[0].value)) * 100);
+    const note = delta === 0 ? "与最早收录值持平" : "较最早收录值" + (delta > 0 ? "上调 " : "下调 ") + (Math.abs(delta) / 100).toFixed(2) + " 个百分点";
+    el("current-release").append(document.createElement("br"), note);
+  }
+  el("chart-wrap").hidden = !latest;
+  drawChart(rows);
+  el("history-count").textContent = rows.length + " 条记录";
+  el("history-table").hidden = !latest;
+  el("empty").hidden = !!latest;
+  const first = data.find(row => row.period === month);
+  el("empty").textContent = "本档案最早在 " + first.release_date + " 的公告中收录该月数据。";
+  const body = el("history");
+  body.replaceChildren();
+  for (let i = rows.length - 1; i >= 0; i--) {
+    const row = rows[i], tr = document.createElement("tr");
+    const change = i ? (Number(row.value) - Number(rows[i - 1].value)).toFixed(2) : null;
+    for (const value of [row.release_date, signed(row.value) + "%", change === null ? "—" : signed(change)]) {
+      tr.insertCell().textContent = value;
+    }
+    const link = document.createElement("a");
+    link.href = row.source_url; link.textContent = "公告原文";
+    link.setAttribute("aria-label", row.release_date + " 国家统计局公告原文");
+    tr.insertCell().append(link);
+    body.append(tr);
+  }
+}
+for (const month of months) el("period").add(new Option(formatMonth(month), month));
+for (const date of dates) el("releases").append(new Option(date, date));
+const monthsAtFirstRelease = new Set(data.filter(row => row.release_date === dates[0]).map(row => row.period));
+el("period").value = months.find(month => monthsAtFirstRelease.has(month)) || months[0];
+el("cutoff").value = dates[dates.length - 1];
+el("coverage").textContent = "本档案收录 " + dates[0] + " 至 " + dates[dates.length - 1] + " 的 " + dates.length + " 次公告。表中的差值以百分点计，最早收录的数值可能已经过修订。";
+el("period").addEventListener("change", render);
+el("cutoff").addEventListener("input", render);
+render();
+</script>
+</body>
+</html>

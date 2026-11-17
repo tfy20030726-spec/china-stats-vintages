@@ -1,0 +1,15 @@
+name: Verify snapshot
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run offline tests
+        run: python3 -m unittest discover -v
+      - name: Rebuild offline demo
+        run: python3 demo/build.py
+      - name: Check published artifacts
+        run: git diff --exit-code -- index.html
